@@ -1,0 +1,51 @@
+gsettings_schema = 'com.kibadda.AdwPinentry.gschema.xml'
+
+# Compile schemas for development
+gnome.compile_schemas(depend_files: gsettings_schema)
+
+# Install GSettings schema
+install_data(gsettings_schema,
+  install_dir: join_paths(get_option('datadir'), 'glib-2.0/schemas')
+)
+
+compile_schemas = find_program('glib-compile-schemas', required: false)
+if compile_schemas.found()
+  test('Validate schema file',
+    compile_schemas,
+    args: ['--strict', '--dry-run', meson.current_source_dir()]
+  )
+endif
+
+
+# Grab all blueprints/*.blp files
+# Crazy idea! If the code is in the repo, it probably needs to get compiled!
+c = run_command('bash', '-c', 'ls blueprints/*.blp', check: true)
+sources = c.stdout().strip().split('\n')
+
+blueprints = custom_target('blueprints',
+  input: sources,
+  output: '.',
+  command: [find_program('blueprint-compiler'), 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
+)
+
+desktop_conf = configuration_data()
+
+desktop = configure_file(
+  input: 'com.kibadda.AdwPinentry.desktop.in',
+  output: 'com.kibadda.AdwPinentry.desktop',
+  configuration: desktop_conf,
+  install: true,
+  install_dir: join_paths(get_option('datadir'), 'applications')
+)
+
+# Compile GResources (UI, icons, etc.)
+data_res = gnome.compile_resources(
+  'com.kibadda.AdwPinentry.data',
+  'com.kibadda.AdwPinentry.data.gresource.xml',
+  gresource_bundle: true,
+  install: true,
+  install_dir: pkgdatadir,
+  dependencies: blueprints,
+)
+
+subdir('icons')

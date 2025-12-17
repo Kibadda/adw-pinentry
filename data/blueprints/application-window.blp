@@ -1,0 +1,62 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $Gjs_Window: Adw.ApplicationWindow {
+  default-width: 580;
+  default-height: 620;
+
+  content: Adw.ToastOverlay toast-overlay {
+    child: Adw.ToolbarView {
+      [top]
+      Adw.HeaderBar {
+        [start]
+        MenuButton menu-button {
+          icon-name: "open-menu-symbolic";
+          tooltip-text: _("Main Menu");
+          menu-model: main-menu;
+          primary: true;
+        }
+      }
+
+      content: Box {
+        orientation: vertical;
+        halign: center;
+        valign: center;
+        hexpand: true;
+        spacing: 12;
+
+        Image {
+          icon-name: "applications-development-symbolic";
+          pixel-size: 100;
+          margin-bottom: 30;
+        }
+
+        Label {
+          label: _("Pinentry");
+          css-classes: ["title-2"];
+        }
+
+        Label description-label {
+          label: _("A minimal GTK4 application with Adwaita styling.");
+          css-classes: ["dim-label"];
+        }
+
+        Label prompt-label {
+          label: "";
+          css-classes: ["heading"];
+          margin-top: 20;
+          visible: false;
+        }
+      };
+    };
+  };
+}
+
+menu main-menu {
+  section {
+    item {
+      label: _("About");
+      action: "win.about";
+    }
+  }
+}

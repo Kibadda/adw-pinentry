@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Adwaita Pinentry
+Exec=adw-pinentry
+Icon=com.kibadda.AdwPinentry
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

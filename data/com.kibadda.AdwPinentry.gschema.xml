@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="adw-pinentry">
+	<schema id="com.kibadda.AdwPinentry" path="/com/kibadda/AdwPinentry/">
+
+    <key name="device-history" type="a{ou}">
+      <default>{}</default>
+    </key>
+
+    <key name="last-used-adapter" type="s">
+      <default>""</default>
+      <summary>Last used Bluetooth adapter</summary>
+      <description>Path of the last used Bluetooth adapter to restore on startup</description>
+    </key>
+
+	</schema>
+</schemalist>

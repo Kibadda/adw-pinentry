@@ -1,4 +1,4 @@
-# Maintainer: Ezra Weaver <mstrobel97@gmail.com>
+# Maintainer: Michael Strobel <mstrobel97@gmail.com>
 pkgname=adw-pinentry
 pkgver=0.1.0
 pkgrel=1
@@ -15,7 +15,6 @@ depends=(
   libadwaita
 )
 makedepends=(
-  blueprint-compiler
   git
   meson
   typescript

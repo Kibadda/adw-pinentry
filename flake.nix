@@ -12,7 +12,7 @@
     {
       # ---- Buildable package ----
       packages.${system}.default = pkgs.stdenv.mkDerivation {
-        pname = "adw-pinentry";
+        pname = "pinentry-adw-wrapped";
         version = "0.1.0";
         src = ./.;
 

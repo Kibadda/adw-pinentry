@@ -32,12 +32,22 @@ bin_conf.set('PACKAGE_VERSION', meson.project_version())
 bin_conf.set('PACKAGE_NAME', meson.project_name())
 bin_conf.set('prefix', get_option('prefix'))
 bin_conf.set('libdir', join_paths(get_option('prefix'), get_option('libdir')))
+bin_conf.set('bindir', join_paths(get_option('prefix'), get_option('bindir')))
 bin_conf.set('datadir', join_paths(get_option('prefix'), get_option('datadir')))
 bin_conf.set('resource_path', '/com/kibadda/AdwPinentry')
 
 app_launcher = configure_file(
   input: 'com.kibadda.AdwPinentry.in',
   output: 'adw-pinentry',
+  configuration: bin_conf,
+  install: true,
+  install_dir: get_option('bindir')
+)
+
+# Configure pinentry protocol wrapper
+pinentry_wrapper = configure_file(
+  input: 'pinentry-adw.in',
+  output: 'pinentry-adw-wrapped',
   configuration: bin_conf,
   install: true,
   install_dir: get_option('bindir')

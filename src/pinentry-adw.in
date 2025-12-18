@@ -1,0 +1,199 @@
+#!/bin/bash
+
+# Variables to store pinentry state
+DESCRIPTION=""
+PROMPT=""
+TITLE="Pinentry"
+ERROR=""
+
+# Path to the actual GTK application (set by meson at build time)
+GTK_APP="@bindir@/adw-pinentry"
+
+# Send OK response
+send_ok() {
+    echo "OK"
+}
+
+# Send error response
+send_error() {
+    local code="${1:-500}"
+    local message="${2:-Unknown error}"
+    echo "ERR ${code} ${message}"
+}
+
+# Send data response
+send_data() {
+    echo "D $1"
+}
+
+# URL decode function for handling percent-encoded strings
+url_decode() {
+    local url_encoded="${1//+/ }"
+    printf '%b' "${url_encoded//%/\\x}"
+}
+
+# Process SETDESC command
+cmd_setdesc() {
+    DESCRIPTION="$(url_decode "$1")"
+    send_ok
+}
+
+# Process SETPROMPT command
+cmd_setprompt() {
+    PROMPT="$(url_decode "$1")"
+    send_ok
+}
+
+# Process SETTITLE command
+cmd_settitle() {
+    TITLE="$(url_decode "$1")"
+    send_ok
+}
+
+# Process SETERROR command
+cmd_seterror() {
+    ERROR="$(url_decode "$1")"
+    send_ok
+}
+
+# Process GETPIN command - launch GTK app
+cmd_getpin() {
+    # Build argument for GTK app: "description|prompt"
+    local arg=""
+    if [ -n "$DESCRIPTION" ]; then
+        arg="$DESCRIPTION"
+    fi
+    if [ -n "$PROMPT" ]; then
+        arg="${arg}|${PROMPT}"
+    fi
+
+    # Launch GTK app and capture output
+    local password
+    if [ -n "$arg" ]; then
+        password=$("$GTK_APP" "$arg" 2>/dev/null)
+    else
+        password=$("$GTK_APP" 2>/dev/null)
+    fi
+
+    local exit_code=$?
+
+    # Check if user cancelled (app closed without entering password)
+    if [ $exit_code -ne 0 ]; then
+        send_error 83886179 "Operation cancelled"
+        return 1
+    fi
+
+    # Check if we got a password
+    if [ -z "$password" ]; then
+        send_error 83886179 "Operation cancelled"
+        return 1
+    fi
+
+    # Send password and OK
+    send_data "$password"
+    send_ok
+}
+
+cmd_getinfo() {
+  case "$1" in
+      flavor)
+          send_data "gtk"
+          send_ok
+          ;;
+      version)
+          send_data "0.1.0"
+          send_ok
+          ;;
+      ttyinfo)
+          send_data "- - - - 1000/1000 0"
+          send_ok
+          ;;
+      pid)
+          send_data "$$"
+          send_ok
+          ;;
+      *)
+          # Unknown command
+          send_error 536870991 "Unknown command"
+          ;;
+  esac
+}
+
+# Process CONFIRM command - just return OK
+cmd_confirm() {
+    send_ok
+}
+
+# Process MESSAGE command - just return OK
+cmd_message() {
+    send_ok
+}
+
+# Main command processing loop
+process_commands() {
+    # Send greeting
+    echo "OK"
+
+    while IFS= read -r line; do
+        # Parse command and arguments
+        cmd=$(echo "$line" | cut -d' ' -f1)
+        args=$(echo "$line" | cut -d' ' -f2-)
+
+        # Handle empty args
+        if [ "$cmd" = "$args" ]; then
+            args=""
+        fi
+
+        case "$cmd" in
+            SETDESC)
+                cmd_setdesc "$args"
+                ;;
+            SETPROMPT)
+                cmd_setprompt "$args"
+                ;;
+            SETTITLE)
+                cmd_settitle "$args"
+                ;;
+            SETERROR)
+                cmd_seterror "$args"
+                ;;
+            SETOK|SETCANCEL|SETNOTOK)
+                # Ignore button text commands (we don't have buttons)
+                send_ok
+                ;;
+            OPTION)
+                # Ignore options
+                send_ok
+                ;;
+            GETPIN)
+                cmd_getpin
+                ;;
+            GETINFO)
+                cmd_getinfo "$args"
+                ;;
+            SETKEYINFO)
+                send_ok
+                ;;
+            CONFIRM)
+                cmd_confirm
+                ;;
+            MESSAGE)
+                cmd_message
+                ;;
+            BYE)
+                send_ok
+                exit 0
+                ;;
+            "")
+                # Empty line, ignore
+                ;;
+            *)
+                # Unknown command
+                send_error 536870991 "Unknown command"
+                ;;
+        esac
+    done
+}
+
+# Start processing commands
+process_commands

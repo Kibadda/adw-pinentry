@@ -27,6 +27,8 @@
               gjs
               libadwaita
             ];
+
+            meta.mainProgram = "pinentry-adw-wrapped";
           };
         };
       };

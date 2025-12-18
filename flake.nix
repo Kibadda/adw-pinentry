@@ -6,33 +6,40 @@
   outputs =
     { self, nixpkgs }:
     let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-    in
-    {
-      # ---- Buildable package ----
-      packages.${system}.default = pkgs.stdenv.mkDerivation {
-        pname = "pinentry-adw-wrapped";
-        version = "0.1.0";
-        src = ./.;
+      overlay = final: prev: {
+        kibadda = (prev.kibadda or { }) // {
+          pinentry-adw-wrapped = final.pkgs.stdenv.mkDerivation {
+            pname = "pinentry-adw-wrapped";
+            version = "0.1.0";
+            src = ./.;
 
-        nativeBuildInputs = [
-          pkgs.meson
-          pkgs.ninja
-          pkgs.pkg-config
-          pkgs.blueprint-compiler
-          pkgs.typescript
-          pkgs.desktop-file-utils
-          pkgs.wrapGAppsHook4
-        ];
+            nativeBuildInputs = with final.pkgs; [
+              meson
+              ninja
+              pkg-config
+              blueprint-compiler
+              typescript
+              desktop-file-utils
+              wrapGAppsHook4
+            ];
 
-        buildInputs = [
-          pkgs.gjs
-          pkgs.libadwaita
-        ];
+            buildInputs = with final.pkgs; [
+              gjs
+              libadwaita
+            ];
+          };
+        };
       };
 
-      # ---- Dev shell ----
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ overlay ];
+      };
+    in
+    {
+      packages.${system}.default = pkgs.kibadda.pinentry-adw-wrapped;
+
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = [
           pkgs.git
@@ -49,5 +56,7 @@
           pkgs.blueprint-compiler
         ];
       };
+
+      overlays.default = overlay;
     };
 }

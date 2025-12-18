@@ -8,7 +8,7 @@ import Gdk from "gi://Gdk?version=4.0";
 
 export class Application extends Adw.Application {
     private window?: Window;
-    private description: string = "A minimal GTK4 application with Adwaita styling.";
+    private description: string = "";
     private prompt: string = "";
 
     static {
@@ -27,15 +27,6 @@ export class Application extends Adw.Application {
         if (prompt) {
             this.prompt = prompt;
         }
-
-        // Enable Ctrl + Q to quit application
-        const quit_action = new Gio.SimpleAction({ name: "quit" });
-        quit_action.connect("activate", () => {
-            this.quit();
-        });
-
-        this.add_action(quit_action);
-        this.set_accels_for_action("app.quit", ["<Control>q"]);
 
         Gio._promisify(Gtk.UriLauncher.prototype, "launch", "launch_finish");
     }

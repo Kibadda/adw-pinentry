@@ -16,18 +16,6 @@ if compile_schemas.found()
   )
 endif
 
-
-# Grab all blueprints/*.blp files
-# Crazy idea! If the code is in the repo, it probably needs to get compiled!
-c = run_command('bash', '-c', 'ls blueprints/*.blp', check: true)
-sources = c.stdout().strip().split('\n')
-
-blueprints = custom_target('blueprints',
-  input: sources,
-  output: '.',
-  command: [find_program('blueprint-compiler'), 'batch-compile', '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'],
-)
-
 desktop_conf = configuration_data()
 
 desktop = configure_file(
@@ -45,7 +33,6 @@ data_res = gnome.compile_resources(
   gresource_bundle: true,
   install: true,
   install_dir: pkgdatadir,
-  dependencies: blueprints,
 )
 
 subdir('icons')

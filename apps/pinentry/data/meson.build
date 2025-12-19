@@ -32,7 +32,7 @@ data_res = gnome.compile_resources(
   'com.kibadda.AdwPinentry.data.gresource.xml',
   gresource_bundle: true,
   install: true,
-  install_dir: pkgdatadir,
+  install_dir: app_pkgdatadir,
 )
 
 subdir('icons')

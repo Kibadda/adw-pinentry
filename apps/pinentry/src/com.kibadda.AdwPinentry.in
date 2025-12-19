@@ -1,4 +1,4 @@
-#!@GJS@ -m
+#!/usr/bin/env -S gjs -m
 
 /**
  * This file is the entry point of our application. When executed,
@@ -6,7 +6,7 @@
  */
 import { exit, programArgs } from "system";
 
-imports.package._findEffectiveEntryPointName = () => 'com.kibadda.AdwPinentry';
+imports.package._findEffectiveEntryPointName = () => '@APP_ID@';
 
 /**
  * This block sets up important package information. GJS uses this to load
